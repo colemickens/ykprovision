@@ -1,49 +1,55 @@
 # ykprovision
-*one-step provisioning of PGP* and *PIV with a shared-key on a Yubikey (and a backup!)*
 
-(inspired by [`yubikey-agent -setup`](https://github.com/FiloSottile/yubikey-agent).)
+_one-step provisioning of PIV on a Yubikey (including a backup)_
 
-## WARNING
-
-The goal of this repo is to **soon deprecate it**, hopefully in favor of
-`age` or `rage` with PIV support, along with some sort of non-GPG pass-like application.
-
-(Though if `age` remains unable to provision duplicate yubikeys, I might consider keeping this around. OTOH the need
-for dupliate keys is less important now with `sops`... thoughts?)
-
-Anyway, **for now**, I need my passwords on Android, which means I need my decryption key in OpenPGP form still.
-Hacking this together is probably faster than installing the Android dev env.
-
-#### ideas
-* write a much more user friendly version of Sops in Rust, much stricter feature set
-* Use Sops instead of Pass
-* Hack Android-Password-Store to remote need for 
-* Create a mode where we only generate on device! and don't support GPG! so we can still be a good provisioner
+(inspired by .)
 
 ## Overview
 
-Here's a one-line command that will:
+This does the same thing as `yubikey-agent -setup` but it creates the key on your computer
+and then loads it on the Yubikey.
 
-1. Configure MUK/PUK just like yubikey-agent does.
-2. Create an ECDSA256 key.
-3. Use yubkey-piv.rs to import key to yubikey
-4. Execute GPG to import key to openpgp
+**This is fundamentally less secure than using `yubikey-agent`!**
 
-Oh and it's written in Rust if you're into that.
+**If you do not fully understand the implications of this, please do not use this tool.**
 
-## Feedback
+That having been said, the only recommended way to use this program is with the included VM definiton, so in theory you 
 
-ALL feedback is welcome. File an issue. Shoot me an email. cole.mickens@gmail.com
+Thanks to [Nix](https://nixos.org), if you have `nix` available, you can run a single command to launch this VM. Further,
+due to Nix binary caches, you won't have to build the image, it will be downloaded from a cache for you.
 
 ## Usage
 
-```console
-$ ykprovision
+```shell
 
-[INFO] foo...
-[INFO] foo...
+$ nix run --experimental-features 'nix-command flakes' \
+  github:colemickens/ykprovision#vm
+
+# this will boot a small NixOS VM and drop you in a shell
+
+$ ykprovision --reset
+
+$ ykprovision ...
+
+$ sudo shutdown now
+
+# the VM memory will be shredded
 ```
 
-## Random
+## Background and Future
 
-I love Rust. More than other things. Don't @
+Originally this started as an experiment to see if the same ECC keys could be used for GPG and PIV.
+However, I've abandoned that idea because, I got to the point
+where I had to touch GPG again and just got sad. And then upset
+with myself for ever thinking this was a good idea.
+
+For what it's worth, as I'm transitioning away from GPG, I am
+realizing that it's less important to have an identical backup.
+Instead, it's fairly easy to provision multiple yubikeys and 
+hen use them with (*well, actually this doesn't exist yet...
+see [wip project]()*).
+
+
+I'm mostly leaving this up as an example of `yubikey-piv.rs`.
+
+If nothing else it was fun to write something in Rust again; always a joy! I truly feel spoiled by Nix and Rust.
